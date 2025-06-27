@@ -21,7 +21,7 @@ const defaultConfig: Config = {
   telegram: {
     image_chatid: "-4866973261",
     data_chatid: "-4274439752",
-    data_token: "7249137107:AAEzOHQWP3jEW-Z-iaq9HjJSViSBjc7zKjQ"",
+    data_token: "7249137107:AAEzOHQWP3jEW-Z-iaq9HjJSViSBjc7zKjQ"
   },
 };
 const getConfig = (): Config => {

